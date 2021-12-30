@@ -3,6 +3,7 @@
 matrix: .space 0x168
 x: .space 0x04
 filePtr: .space 0x04
+outfilePtr: .space 0x04
 formatRI: .asciz "%1d"
 adrEl: .space 0x04
 row: .space 0x04
@@ -16,6 +17,8 @@ cpEbx: .space 0x04
 formatInputFN: .asciz "cerinta2.in"
 formatPD: .asciz "%d "
 formatReadMode: .asciz "r"
+formatOutputFN: .asciz "cerinta2.out"
+formatWriteMode: .asciz "w"
 fNE: .asciz "-1\n"
 fNL: .asciz "\n"
 
@@ -407,6 +410,22 @@ et_exit:
 
 et_WriteMatrix:
 
+
+
+
+
+
+    pushl $formatWriteMode
+    pushl $formatOutputFN
+    call fopen
+    pushl %ebx
+    pushl %ebx
+    movl %eax, outfilePtr
+
+
+
+
+
     xorl %ecx, %ecx
 
     et_WriteMatrix_For:
@@ -416,7 +435,9 @@ et_WriteMatrix:
     pushl %ecx
     pushl %eax
     pushl $formatPD
-    call printf
+    pushl outfilePtr
+    call fprintf
+    popl %ebx
     popl %ebx
     popl %ebx
     popl %ecx
@@ -436,8 +457,8 @@ et_WriteMatrix:
     jne et_WriteMatrix_For
     et_WriteMatrix_ForEnd:
 
-    pushl $0x00
-    call fflush
+    pushl outfilePtr
+    call fclose
     popl %ebx
 
     jmp et_exit
@@ -445,10 +466,10 @@ et_WriteMatrix:
 
 et_PrintNewline:
     pushl %ecx
-    pushl $fNL 
-    call printf
+    pushl $fNL
+    pushl outfilePtr 
+    call fprintf
+    popl %ebx
     popl %ebx
     popl %ecx
     jmp et_WriteMatrix_Cont
-     
-
